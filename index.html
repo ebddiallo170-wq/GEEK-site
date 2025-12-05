@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam&Ban - Envoi Direct WhatsApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ff41;
+            --primary-dark: #008f11;
+            --secondary: #003b00;
+            --dark: #001100;
+            --glass: rgba(0, 30, 0, 0.7);
+            --glass-border: rgba(0, 255, 65, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            opacity: 0.1;
+            z-index: 999;
+            animation: scan 4s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px var(--primary);
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px var(--primary); }
+            50% { text-shadow: 0 0 20px var(--primary), 0 0 30px var(--primary); }
+            100% { text-shadow: 0 0 5px var(--primary); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 5px var(--primary-dark);
+            font-size: 0.9rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0, 20, 0, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .phone-input {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .country-code {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .phone-number {
+            flex: 2;
+            min-width: 150px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 15px var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-warning {
+            color: #ffaa00;
+            border-color: #ffaa00;
+        }
+        
+        .btn-warning:hover {
+            background: rgba(255, 170, 0, 0.1);
+            box-shadow: 0 0 15px #ffaa00;
+        }
+        
+        .btn-success {
+            color: #00ff88;
+            border-color: #00ff88;
+        }
+        
+        .btn-success:hover {
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        .btn-info {
+            color: #00a8ff;
+            border-color: #00a8ff;
+        }
+        
+        .btn-info:hover {
+            background: rgba(0, 168, 255, 0.1);
+            box-shadow: 0 0 15px #00a8ff;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .email-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .action-buttons {
+                grid-template-columns: 1fr 1fr;
+            }
+            .email-options {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .report-preview {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            padding: 8px 15px;
+        }
+
+        .search-box {
+            margin-bottom: 10px;
+        }
+
+        .search-box input {
+            background: rgba(0, 20, 0, 0.9);
+        }
+
+        .developer-section {
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 20px;
+        }
+
+        .developer-info {
+            margin-bottom: 15px;
+        }
+
+        .developer-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        .developer-phone {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .developer-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .developer-buttons {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <canvas id="matrix-bg"></canvas>
+    
+    <div class="container">
+        <div class="glass-panel">
+            <header>
+                <div class="logo">🚫Diamant    the geek💻</div>
+                <h1>Spam & Ban </h1>
+                <p class="subtitle">ENVOI AUTOMATIQUE VERS WHATSAPP</p>
+            </header>
+            
+            <div class="form-group">
+                <label for="phone">>> NUMÉRO CIBLÉ:</label>
+                <div class="phone-input">
+                    <select class="country-code" id="countryCode" size="1">
+                        <!-- Les pays seront ajoutés par JavaScript -->
+                    </select>
+                    <input type="text" class="phone-number" id="phoneNumber" placeholder="Numéro sans indicatif" maxlength="15">
+                </div>
+                <div class="search-box">
+                    <input type="text" id="countrySearch" placeholder="🔍 Rechercher un pays..." style="width: 100%">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">>> RAISON DU SIGNALEMENT:</label>
+                <select id="reason">
+                    <option value="">Sélectionnez une raison</option>
+                    <option value="spam">SPAM / PUBLICITÉ NON SOLICITÉE</option>
+                    <option value="harassment">HARCÈLEMENT</option>
+                    <option value="scam">ARNAQUE / FRAUDE</option>
+                    <option value="fake">COMPTE FAUX / USURPATION</option>
+                    <option value="other">AUTRE</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="details">>> DÉTAILS DE L'INTRUSION:</label>
+                <textarea id="details" placeholder="Décrivez l'incident avec précision (dates, faits, messages, etc.)"></textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-block" id="generateBtn">>> GÉNÉRER LE RAPPORT</button>
+            </div>
+            
+            <div class="report-preview" id="reportPreview">
+                <!-- Le rapport généré apparaîtra ici -->
+            </div>
+            
+            <div class="email-options" id="emailOptions" style="display: none;">
+                <a href="#" class="btn btn-success" id="gmailBtn">
+                    <i class="fab fa-google"></i> GMAIL
+                </a>
+                <a href="#" class="btn btn-success" id="outlookBtn">
+                    <i class="fab fa-microsoft"></i> OUTLOOK
+                </a>
+                <a href="#" class="btn btn-success" id="emailBtn">
+                    <i class="fas fa-envelope"></i> EMAIL DIRECT
+                </a>
+                <button class="btn btn-warning" id="copyBtn">
+                    <i class="fas fa-copy"></i> COPIER
+                </button>
+            </div>
+
+            <!-- SECTION MR PROBLÉMATIQUE -->
+            <div class="developer-section">
+                <div class="developer-info">
+                    <div class="developer-name">>> Diamant GEEK</div>
+                    <div class="developer-phone">📞 +224 626067216</div>
+                    <p>Créateur du système Spam&Ban</p>
+                </div>
+                <div class="developer-buttons">
+                    <a href="https://wa.me/224626067216" class="btn btn-info" target="_blank">
+                        <i class="fab fa-whatsapp"></i> WHATSAPP DIRECT
+                    </a>
+                    <a href="https://wa.me/224626067216" class="btn btn-warning" target="_blank">
+                        <i class="fab fa-whatsapp"></i> CHAÎNE WHATSAPP
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Liste COMPLÈTE de tous les pays du monde
+        const countryCodes = [
+            // AFRIQUE (54 pays)
+            { code: "+213", name: "Algérie" },
+            { code: "+244", name: "Angola" },
+            { code: "+229", name: "Bénin" },
+            { code: "+267", name: "Botswana" },
+            { code: "+226", name: "Burkina Faso" },
+            { code: "+257", name: "Burundi" },
+            { code: "+238", name: "Cap-Vert" },
+            { code: "+237", name: "Cameroun" },
+            { code: "+236", name: "République centrafricaine" },
+            { code: "+235", name: "Tchad" },
+            { code: "+269", name: "Comores" },
+            { code: "+242", name: "Congo" },
+            { code: "+243", name: "République démocratique du Congo" },
+            { code: "+225", name: "Côte d'Ivoire" },
+            { code: "+253", name: "Djibouti" },
+            { code: "+20", name: "Égypte" },
+            { code: "+240", name: "Guinée équatoriale" },
+            { code: "+291", name: "Érythrée" },
+            { code: "+268", name: "Eswatini" },
+            { code: "+251", name: "Éthiopie" },
+            { code: "+241", name: "Gabon" },
+            { code: "+220", name: "Gambie" },
+            { code: "+233", name: "Ghana" },
+            { code: "+224", name: "Guinée" },
+            { code: "+245", name: "Guinée-Bissau" },
+            { code: "+254", name: "Kenya" },
+            { code: "+266", name: "Lesotho" },
+            { code: "+231", name: "Libéria" },
+            { code: "+218", name: "Libye" },
+            { code: "+261", name: "Madagascar" },
+            { code: "+265", name: "Malawi" },
+            { code: "+223", name: "Mali" },
+            { code: "+222", name: "Mauritanie" },
+            { code: "+230", name: "Maurice" },
+            { code: "+269", name: "Mayotte" },
+            { code: "+212", name: "Maroc" },
+            { code: "+258", name: "Mozambique" },
+            { code: "+264", name: "Namibie" },
+            { code: "+227", name: "Niger" },
+            { code: "+234", name: "Nigéria" },
+            { code: "+262", name: "Réunion" },
+            { code: "+250", name: "Rwanda" },
+            { code: "+290", name: "Sainte-Hélène" },
+            { code: "+239", name: "Sao Tomé-et-Principe" },
+            { code: "+221", name: "Sénégal" },
+            { code: "+248", name: "Seychelles" },
+            { code: "+232", name: "Sierra Leone" },
+            { code: "+252", name: "Somalie" },
+            { code: "+27", name: "Afrique du Sud" },
+            { code: "+211", name: "Soudan du Sud" },
+            { code: "+249", name: "Soudan" },
+            { code: "+255", name: "Tanzanie" },
+            { code: "+228", name: "Togo" },
+            { code: "+216", name: "Tunisie" },
+            { code: "+256", name: "Ouganda" },
+            { code: "+260", name: "Zambie" },
+            { code: "+263", name: "Zimbabwe" },
+
+            // AMÉRIQUE (35 pays)
+            { code: "+1", name: "États-Unis" },
+            { code: "+1", name: "Canada" },
+            { code: "+52", name: "Mexique" },
+            { code: "+501", name: "Belize" },
+            { code: "+506", name: "Costa Rica" },
+            { code: "+503", name: "Salvador" },
+            { code: "+502", name: "Guatemala" },
+            { code: "+504", name: "Honduras" },
+            { code: "+505", name: "Nicaragua" },
+            { code: "+507", name: "Panama" },
+            { code: "+1", name: "Antigua-et-Barbuda" },
+            { code: "+1", name: "Bahamas" },
+            { code: "+1", name: "Barbade" },
+            { code: "+1", name: "Dominique" },
+            { code: "+1", name: "République dominicaine" },
+            { code: "+1", name: "Grenade" },
+            { code: "+1", name: "Jamaïque" },
+            { code: "+1", name: "Saint-Kitts-et-Nevis" },
+            { code: "+1", name: "Sainte-Lucie" },
+            { code: "+1", name: "Saint-Vincent-et-les-Grenadines" },
+            { code: "+1", name: "Trinité-et-Tobago" },
+            { code: "+54", name: "Argentine" },
+            { code: "+591", name: "Bolivie" },
+            { code: "+55", name: "Brésil" },
+            { code: "+56", name: "Chili" },
+            { code: "+57", name: "Colombie" },
+            { code: "+593", name: "Équateur" },
+            { code: "+592", name: "Guyana" },
+            { code: "+595", name: "Paraguay" },
+            { code: "+51", name: "Pérou" },
+            { code: "+597", name: "Suriname" },
+            { code: "+598", name: "Uruguay" },
+            { code: "+58", name: "Venezuela" },
+
+            // EUROPE (44 pays)
+            { code: "+355", name: "Albanie" },
+            { code: "+376", name: "Andorre" },
+            { code: "+43", name: "Autriche" },
+            { code: "+375", name: "Biélorussie" },
+            { code: "+32", name: "Belgique" },
+            { code: "+387", name: "Bosnie-Herzégovine" },
+            { code: "+359", name: "Bulgarie" },
+            { code: "+385", name: "Croatie" },
+            { code: "+357", name: "Chypre" },
+            { code: "+420", name: "République tchèque" },
+            { code: "+45", name: "Danemark" },
+            { code: "+372", name: "Estonie" },
+            { code: "+358", name: "Finlande" },
+            { code: "+33", name: "France" },
+            { code: "+49", name: "Allemagne" },
+            { code: "+30", name: "Grèce" },
+            { code: "+36", name: "Hongrie" },
+            { code: "+354", name: "Islande" },
+            { code: "+353", name: "Irlande" },
+            { code: "+39", name: "Italie" },
+            { code: "+371", name: "Lettonie" },
+            { code: "+423", name: "Liechtenstein" },
+            { code: "+370", name: "Lituanie" },
+            { code: "+352", name: "Luxembourg" },
+            { code: "+356", name: "Malte" },
+            { code: "+373", name: "Moldavie" },
+            { code: "+377", name: "Monaco" },
+            { code: "+382", name: "Monténégro" },
+            { code: "+31", name: "Pays-Bas" },
+            { code: "+389", name: "Macédoine du Nord" },
+            { code: "+47", name: "Norvège" },
+            { code: "+48", name: "Pologne" },
+            { code: "+351", name: "Portugal" },
+            { code: "+40", name: "Roumanie" },
+            { code: "+7", name: "Russie" },
+            { code: "+378", name: "Saint-Marin" },
+            { code: "+381", name: "Serbie" },
+            { code: "+421", name: "Slovaquie" },
+            { code: "+386", name: "Slovénie" },
+            { code: "+34", name: "Espagne" },
+            { code: "+46", name: "Suède" },
+            { code: "+41", name: "Suisse" },
+            { code: "+380", name: "Ukraine" },
+            { code: "+44", name: "Royaume-Uni" },
+
+            // ASIE (48 pays)
+            { code: "+93", name: "Afghanistan" },
+            { code: "+374", name: "Arménie" },
+            { code: "+994", name: "Azerbaïdjan" },
+            { code: "+973", name: "Bahreïn" },
+            { code: "+880", name: "Bangladesh" },
+            { code: "+975", name: "Bhoutan" },
+            { code: "+673", name: "Brunei" },
+            { code: "+855", name: "Cambodge" },
+            { code: "+86", name: "Chine" },
+            { code: "+357", name: "Chypre" },
+            { code: "+82", name: "Corée du Sud" },
+            { code: "+850", name: "Corée du Nord" },
+            { code: "+965", name: "Koweït" },
+            { code: "+996", name: "Kirghizistan" },
+            { code: "+856", name: "Laos" },
+            { code: "+961", name: "Liban" },
+            { code: "+60", name: "Malaisie" },
+            { code: "+960", name: "Maldives" },
+            { code: "+976", name: "Mongolie" },
+            { code: "+95", name: "Myanmar" },
+            { code: "+977", name: "Népal" },
+            { code: "+968", name: "Oman" },
+            { code: "+92", name: "Pakistan" },
+            { code: "+63", name: "Philippines" },
+            { code: "+974", name: "Qatar" },
+            { code: "+966", name: "Arabie saoudite" },
+            { code: "+65", name: "Singapour" },
+            { code: "+94", name: "Sri Lanka" },
+            { code: "+963", name: "Syrie" },
+            { code: "+992", name: "Tadjikistan" },
+            { code: "+66", name: "Thaïlande" },
+            { code: "+90", name: "Turquie" },
+            { code: "+993", name: "Turkménistan" },
+            { code: "+971", name: "Émirats arabes unis" },
+            { code: "+998", name: "Ouzbékistan" },
+            { code: "+84", name: "Vietnam" },
+            { code: "+967", name: "Yémen" },
+
+            // OCÉANIE (14 pays)
+            { code: "+61", name: "Australie" },
+            { code: "+691", name: "Micronésie" },
+            { code: "+679", name: "Fidji" },
+            { code: "+689", name: "Polynésie française" },
+            { code: "+687", name: "Nouvelle-Calédonie" },
+            { code: "+682", name: "Îles Cook" },
+            { code: "+692", name: "Îles Marshall" },
+            { code: "+686", name: "Kiribati" },
+            { code: "+683", name: "Niue" },
+            { code: "+674", name: "Nauru" },
+            { code: "+64", name: "Nouvelle-Zélande" },
+            { code: "+680", name: "Palaos" },
+            { code: "+675", name: "Papouasie-Nouvelle-Guinée" },
+            { code: "+685", name: "Samoa" },
+            { code: "+677", name: "Îles Salomon" },
+            { code: "+676", name: "Tonga" },
+            { code: "+688", name: "Tuvalu" },
+            { code: "+678", name: "Vanuatu" }
+        ];
+
+        // Remplir le sélecteur de pays
+        const countryCodeSelect = document.getElementById('countryCode');
+        const countrySearch = document.getElementById('countrySearch');
+
+        // Trier par nom de pays
+        countryCodes.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Ajouter tous les pays
+        countryCodes.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.code;
+            option.textContent = `${country.code} - ${country.name}`;
+            option.setAttribute('data-search', `${country.name} ${country.code}`.toLowerCase());
+            countryCodeSelect.appendChild(option);
+        });
+
+        // Recherche de pays
+        countrySearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const options = countryCodeSelect.options;
+            
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                const searchText = option.getAttribute('data-search');
+                
+                if (searchText.includes(searchTerm)) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        });
+
+        // Effet Matrix
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        
+        const chars = "01010101010101010101010101010101";
+        const charArray = chars.split("");
+        const font_size = 14;
+        const columns = canvas.width / font_size;
+        const drops = [];
+        
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 17, 0, 0.04)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#00ff41";
+            ctx.font = font_size + "px monospace";
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * font_size, drops[i] * font_size);
+                
+                if (drops[i] * font_size > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 35);
+        
+        // Générateur de rapport
+        const generateBtn = document.getElementById('generateBtn');
+        const reportPreview = document.getElementById('reportPreview');
+        const emailOptions = document.getElementById('emailOptions');
+        const gmailBtn = document.getElementById('gmailBtn');
+        const outlookBtn = document.getElementById('outlookBtn');
+        const emailBtn = document.getElementById('emailBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        generateBtn.addEventListener('click', function() {
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const reason = document.getElementById('reason').value;
+            const details = document.getElementById('details').value;
+            
+            // Validation
+            if (!phoneNumber || !reason || !details) {
+                alert('Veuillez remplir tous les champs obligatoires.');
+                return;
+            }
+            
+            const fullNumber = countryCode + phoneNumber;
+            const reasonText = document.getElementById('reason').options[document.getElementById('reason').selectedIndex].text;
+            const countryName = countryCodeSelect.options[countryCodeSelect.selectedIndex].text.split(' - ')[1];
+            
+            // Générer le rapport
+            const report = `
+SIGNALEMENT WHATSAPP - RAPPORT AUTOMATIQUE
+
+NUMÉRO SIGNALÉ: ${fullNumber}
+PAYS: ${countryName}
+RAISON: ${reasonText}
+DATE: ${new Date().toLocaleString()}
+
+DÉTAILS DE L'INCIDENT:
+${details}
+
+RAPPORT GÉNÉRÉ AUTOMATIQUEMENT PAR SPAM&BAN SYSTEM
+            `.trim();
+            
+            // Afficher le rapport
+            reportPreview.textContent = report;
+            reportPreview.style.display = 'block';
+            emailOptions.style.display = 'grid';
+            
+            // Préparer les liens d'envoi
+            const subject = `Signalement WhatsApp - ${fullNumber}`;
+            const body = encodeURIComponent(report);
+            const whatsappEmail = 'abuse@whatsapp.com';
+            
+            // Liens pour les différents clients email
+            gmailBtn.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${whatsappEmail}&su=${encodeURIComponent(subject)}&body=${body}`;
+            outlookBtn.href = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${whatsappEmail}&subject=${encodeURIComponent(subject)}&body=${body}`;
+            emailBtn.href = `mailto:${whatsappEmail}?subject=${encodeURIComponent(subject)}&body=${body}`;
+            
+            // Effet de génération
+            generateBtn.innerHTML = '>> RAPPORT GÉNÉRÉ ✓';
+            setTimeout(() => {
+                generateBtn.innerHTML = '>> GÉNÉRER LE RAPPORT';
+            }, 2000);
+        });
+        
+        // Copier le rapport
+        copyBtn.addEventListener('click', function() {
+            const reportText = reportPreview.textContent;
+            navigator.clipboard.writeText(reportText).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIÉ ✓';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER';
+                }, 2000);
+            });
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
